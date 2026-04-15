@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Big Cloud — Vape Store | Valentín Alsina</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --neon-cyan: #00f5ff;
+  --neon-purple: #bf00ff;
+  --neon-pink: #ff00aa;
+  --neon-green: #00ff88;
+  --bg-dark: #050810;
+  --bg-card: #0a0f1e;
+  --bg-card2: #0d1428;
+  --text-main: #e8eaf6;
+  --text-muted: #7986cb;
+  --border-subtle: rgba(0,245,255,0.15);
+  --glass: rgba(10,15,30,0.92);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg-dark); color:var(--text-main); font-family:'Inter',sans-serif; min-height:100vh; overflow-x:hidden; }
+
+/* ============ VAPOR CANVAS ============ */
+#vapor-canvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; opacity:0.35; }
+
+/* ============ NAVBAR ============ */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:1000;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 1.5rem; height:64px;
+  background:rgba(5,8,16,0.92); backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border-subtle);
+}
+.nav-logo { font-family:'Orbitron',monospace; font-weight:900; font-size:1.2rem; color:var(--neon-cyan); text-shadow:0 0 20px var(--neon-cyan),0 0 40px rgba(0,245,255,0.4); letter-spacing:2px; text-decoration:none; flex-shrink:0; }
+.nav-logo span { color:var(--neon-purple); text-shadow:0 0 20px var(--neon-purple); }
+.nav-links { display:flex; gap:2rem; list-style:none; }
+.nav-links a { color:var(--text-muted); text-decoration:none; font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.9rem; letter-spacing:1px; text-transform:uppercase; transition:color 0.3s,text-shadow 0.3s; }
+.nav-links a:hover { color:var(--neon-cyan); text-shadow:0 0 10px var(--neon-cyan); }
+.nav-actions { display:flex; gap:0.75rem; align-items:center; }
+.cart-btn {
+  position:relative; background:transparent; border:1px solid var(--neon-cyan); color:var(--neon-cyan);
+  padding:0.5rem 1.1rem; border-radius:4px; cursor:pointer; font-family:'Rajdhani',sans-serif;
+  font-weight:700; font-size:0.9rem; letter-spacing:1px; text-transform:uppercase;
+  transition:all 0.3s; box-shadow:0 0 10px rgba(0,245,255,0.3),inset 0 0 10px rgba(0,245,255,0.05); white-space:nowrap;
+}
+.cart-btn:hover { background:rgba(0,245,255,0.1); box-shadow:0 0 25px rgba(0,245,255,0.6),inset 0 0 20px rgba(0,245,255,0.1); }
+.cart-btn.bounce { animation:cartBounce 0.4s cubic-bezier(.25,.8,.25,1); }
+@keyframes cartBounce { 0%{transform:scale(1)} 40%{transform:scale(1.25)} 70%{transform:scale(0.9)} 100%{transform:scale(1)} }
+.cart-count { position:absolute; top:-8px; right:-8px; background:var(--neon-pink); color:#000; font-size:0.65rem; font-weight:900; width:20px; height:20px; border-radius:50%; display:none; align-items:center; justify-content:center; box-shadow:0 0 10px var(--neon-pink); }
+
+/* HAMBURGER */
+.hamburger { display:none; flex-direction:column; gap:5px; background:transparent; border:none; cursor:pointer; padding:4px; z-index:1001; }
+.hamburger span { display:block; width:24px; height:2px; background:var(--neon-cyan); border-radius:2px; transition:all 0.3s; box-shadow:0 0 6px var(--neon-cyan); }
+.hamburger.open span:nth-child(1) { transform:rotate(45deg) translate(5px,5px); }
+.hamburger.open span:nth-child(2) { opacity:0; }
+.hamburger.open span:nth-child(3) { transform:rotate(-45deg) translate(5px,-5px); }
+
+/* MOBILE NAV */
+.mobile-nav { display:none; position:fixed; top:64px; left:0; right:0; background:rgba(5,8,16,0.97); backdrop-filter:blur(20px); border-bottom:1px solid var(--border-subtle); z-index:999; padding:1.5rem; flex-direction:column; gap:0.25rem; box-shadow:0 10px 40px rgba(0,0,0,0.5); }
+.mobile-nav.open { display:flex; }
+.mobile-nav a { display:block; padding:0.9rem 1rem; color:var(--text-muted); text-decoration:none; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1rem; letter-spacing:2px; text-transform:uppercase; border-radius:4px; transition:all 0.2s; border-left:2px solid transparent; }
+.mobile-nav a:hover { color:var(--neon-cyan); border-left-color:var(--neon-cyan); background:rgba(0,245,255,0.05); padding-left:1.5rem; }
+
+/* ============ HERO ============ */
+.hero { position:relative; z-index:1; min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:6rem 1.5rem 4rem; overflow:hidden; }
+.hero-bg-gradient { position:absolute; inset:0; background:radial-gradient(ellipse at 20% 50%,rgba(191,0,255,0.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 30%,rgba(0,245,255,0.12) 0%,transparent 60%),radial-gradient(ellipse at 50% 80%,rgba(255,0,170,0.08) 0%,transparent 50%); }
+.hero-content { position:relative; max-width:800px; }
+.hero-tag { display:inline-block; padding:0.3rem 1rem; border:1px solid var(--neon-purple); border-radius:2px; font-family:'Rajdhani',sans-serif; font-size:0.8rem; letter-spacing:3px; text-transform:uppercase; color:var(--neon-purple); margin-bottom:1.5rem; box-shadow:0 0 15px rgba(191,0,255,0.3); animation:pulse-border 2s ease-in-out infinite; }
+@keyframes pulse-border { 0%,100%{box-shadow:0 0 15px rgba(191,0,255,0.3)} 50%{box-shadow:0 0 30px rgba(191,0,255,0.6),0 0 60px rgba(191,0,255,0.2)} }
+.hero h1 { font-family:'Orbitron',monospace; font-size:clamp(2.5rem,8vw,5.5rem); font-weight:900; line-height:1.05; letter-spacing:-1px; margin-bottom:1.5rem; }
+.hero h1 .line1 { color:var(--text-main); display:block; }
+.hero h1 .line2 { color:var(--neon-cyan); text-shadow:0 0 30px var(--neon-cyan),0 0 60px rgba(0,245,255,0.3); display:block; animation:flicker 4s ease-in-out infinite; }
+@keyframes flicker { 0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:0.8} 94%{opacity:1} 96%{opacity:0.9} 97%{opacity:1} }
+.hero-sub { font-size:1.05rem; color:var(--text-muted); max-width:500px; margin:0 auto 2.5rem; line-height:1.7; }
+.hero-cta { display:inline-flex; gap:1rem; flex-wrap:wrap; justify-content:center; }
+
+/* ============ NEON BUTTONS ============ */
+.btn-neon { display:inline-block; padding:0.85rem 2rem; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:0.95rem; letter-spacing:2px; text-transform:uppercase; text-decoration:none; border-radius:4px; cursor:pointer; transition:all 0.3s cubic-bezier(.25,.8,.25,1); position:relative; overflow:hidden; border:none; }
+.btn-cyan { background:rgba(0,245,255,0.08); color:var(--neon-cyan); border:1px solid var(--neon-cyan); box-shadow:0 0 20px rgba(0,245,255,0.3),inset 0 0 20px rgba(0,245,255,0.05); }
+.btn-cyan:hover { background:rgba(0,245,255,0.15); box-shadow:0 0 40px rgba(0,245,255,0.7),0 0 80px rgba(0,245,255,0.2),inset 0 0 30px rgba(0,245,255,0.1); transform:translateY(-2px); }
+.btn-purple { background:rgba(191,0,255,0.08); color:var(--neon-purple); border:1px solid var(--neon-purple); box-shadow:0 0 20px rgba(191,0,255,0.3),inset 0 0 20px rgba(191,0,255,0.05); }
+.btn-purple:hover { background:rgba(191,0,255,0.15); box-shadow:0 0 40px rgba(191,0,255,0.7),0 0 80px rgba(191,0,255,0.2),inset 0 0 30px rgba(191,0,255,0.1); transform:translateY(-2px); }
+
+/* ============ SECTIONS ============ */
+section { position:relative; z-index:1; }
+.section-header { text-align:center; margin-bottom:3rem; }
+.section-tag { font-family:'Rajdhani',sans-serif; font-size:0.75rem; letter-spacing:4px; text-transform:uppercase; color:var(--neon-cyan); margin-bottom:0.75rem; }
+.section-title { font-family:'Orbitron',monospace; font-size:clamp(1.5rem,4vw,2.5rem); font-weight:700; color:var(--text-main); }
+.section-title span { color:var(--neon-purple); text-shadow:0 0 20px rgba(191,0,255,0.5); }
+
+/* ============ FEATURED ============ */
+.featured-section { position:relative; z-index:1; padding:4rem 1.5rem; background:linear-gradient(180deg,transparent,rgba(191,0,255,0.04),transparent); border-top:1px solid rgba(191,0,255,0.1); border-bottom:1px solid rgba(191,0,255,0.1); }
+.featured-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1.25rem; max-width:1200px; margin:0 auto; }
+.featured-card { background:var(--bg-card); border:1px solid rgba(191,0,255,0.25); border-radius:12px; overflow:hidden; cursor:pointer; transition:all 0.35s cubic-bezier(.25,.8,.25,1); position:relative; }
+.featured-card:hover { transform:translateY(-6px) scale(1.02); border-color:rgba(191,0,255,0.6); box-shadow:0 15px 50px rgba(191,0,255,0.2); }
+.featured-img-wrap { position:relative; aspect-ratio:1; background:var(--bg-card2); overflow:hidden; }
+.featured-img-wrap img { width:100%; height:100%; object-fit:cover; transition:transform 0.4s; }
+.featured-card:hover .featured-img-wrap img { transform:scale(1.08); }
+.featured-badge { position:absolute; top:0.6rem; left:0.6rem; padding:0.2rem 0.6rem; border-radius:3px; background:rgba(255,0,170,0.2); color:var(--neon-pink); border:1px solid rgba(255,0,170,0.5); font-family:'Rajdhani',sans-serif; font-size:0.6rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; }
+.featured-info { padding:1rem; }
+.featured-name { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:0.95rem; color:var(--text-main); margin-bottom:0.5rem; line-height:1.3; }
+.featured-price { font-family:'Orbitron',monospace; font-size:1rem; color:var(--neon-cyan); text-shadow:0 0 10px rgba(0,245,255,0.4); }
+.featured-empty { text-align:center; padding:2rem; color:var(--text-muted); font-family:'Rajdhani',sans-serif; grid-column:1/-1; }
+
+/* ============ CATEGORIES ============ */
+.categories-section { padding:5rem 1.5rem; max-width:1200px; margin:0 auto; }
+.cat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:0.75rem; }
+.cat-card { background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:8px; padding:1.25rem 0.75rem; text-align:center; cursor:pointer; transition:all 0.3s; position:relative; overflow:hidden; }
+.cat-card::before { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--neon-cyan),var(--neon-purple)); transform:scaleX(0); transition:transform 0.3s; }
+.cat-card:hover::before,.cat-card.active::before { transform:scaleX(1); }
+.cat-card:hover,.cat-card.active { border-color:var(--neon-cyan); box-shadow:0 0 20px rgba(0,245,255,0.2); transform:translateY(-3px); }
+.cat-card.active { background:rgba(0,245,255,0.05); }
+.cat-icon { font-size:1.75rem; margin-bottom:0.4rem; display:block; }
+.cat-name { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:0.75rem; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-muted); }
+.cat-card:hover .cat-name,.cat-card.active .cat-name { color:var(--neon-cyan); }
+.cat-count { font-size:0.65rem; color:var(--text-muted); margin-top:0.2rem; }
+
+/* ============ PRODUCTS ============ */
+.products-section { padding:2rem 1.5rem 6rem; max-width:1200px; margin:0 auto; }
+.products-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1.5rem; }
+.product-card { background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:12px; overflow:hidden; cursor:pointer; transition:all 0.35s cubic-bezier(.25,.8,.25,1); position:relative; }
+.product-card:hover { transform:translateY(-6px); border-color:rgba(0,245,255,0.4); box-shadow:0 10px 40px rgba(0,245,255,0.15),0 0 0 1px rgba(0,245,255,0.1); }
+.product-card.out-of-stock { opacity:0.5; }
+.product-card.adding { animation:cardAdd 0.5s cubic-bezier(.25,.8,.25,1); }
+@keyframes cardAdd { 0%{transform:translateY(-6px) scale(1)} 30%{transform:translateY(-10px) scale(1.04);box-shadow:0 20px 60px rgba(0,245,255,0.5),0 0 40px rgba(0,245,255,0.3);border-color:var(--neon-cyan)} 100%{transform:translateY(-6px) scale(1)} }
+.product-img-wrap { position:relative; aspect-ratio:1; background:var(--bg-card2); overflow:hidden; }
+.product-img-wrap img { width:100%; height:100%; object-fit:cover; transition:transform 0.4s; }
+.product-card:hover .product-img-wrap img { transform:scale(1.07); }
+.product-badge { position:absolute; top:0.75rem; left:0.75rem; padding:0.2rem 0.6rem; border-radius:3px; font-family:'Rajdhani',sans-serif; font-size:0.65rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; }
+.badge-new { background:rgba(0,245,255,0.15); color:var(--neon-cyan); border:1px solid rgba(0,245,255,0.4); }
+.badge-hot { background:rgba(255,0,170,0.15); color:var(--neon-pink); border:1px solid rgba(255,0,170,0.4); }
+.badge-sale { background:rgba(191,0,255,0.15); color:var(--neon-purple); border:1px solid rgba(191,0,255,0.4); }
+.product-info { padding:1.25rem; }
+.product-cat { font-family:'Rajdhani',sans-serif; font-size:0.65rem; letter-spacing:2px; text-transform:uppercase; color:var(--neon-purple); margin-bottom:0.4rem; }
+.product-name { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1rem; color:var(--text-main); margin-bottom:0.4rem; line-height:1.3; }
+.product-desc { font-size:0.78rem; color:var(--text-muted); line-height:1.5; margin-bottom:1rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.product-footer { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; }
+.product-price { font-family:'Orbitron',monospace; font-weight:700; font-size:1.1rem; color:var(--neon-cyan); text-shadow:0 0 10px rgba(0,245,255,0.4); }
+.add-cart-btn { background:transparent; border:1px solid var(--neon-cyan); color:var(--neon-cyan); padding:0.5rem 0.9rem; border-radius:4px; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:0.75rem; letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all 0.3s; box-shadow:0 0 8px rgba(0,245,255,0.2); min-height:36px; }
+.add-cart-btn:hover { background:rgba(0,245,255,0.12); box-shadow:0 0 20px rgba(0,245,255,0.5); }
+.add-cart-btn:disabled { border-color:#333; color:#444; cursor:not-allowed; box-shadow:none; }
+.view-detail-btn { background:transparent; border:none; color:var(--text-muted); font-family:'Rajdhani',sans-serif; font-size:0.75rem; cursor:pointer; padding:0.3rem 0; transition:color 0.2s; text-decoration:underline; display:block; margin-top:0.5rem; }
+.view-detail-btn:hover { color:var(--neon-cyan); }
+
+/* CART PARTICLE */
+.cart-particle { position:fixed; width:50px; height:50px; border-radius:8px; object-fit:cover; border:2px solid var(--neon-cyan); box-shadow:0 0 20px rgba(0,245,255,0.6); pointer-events:none; z-index:9999; will-change:transform,opacity; }
+
+/* ============ CART SIDEBAR ============ */
+.cart-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:2000; opacity:0; pointer-events:none; transition:opacity 0.3s; backdrop-filter:blur(4px); }
+.cart-overlay.open { opacity:1; pointer-events:all; }
+.cart-sidebar { position:fixed; top:0; right:-450px; width:420px; height:100vh; background:var(--bg-card2); border-left:1px solid var(--border-subtle); z-index:2001; transition:right 0.4s cubic-bezier(.25,.8,.25,1); display:flex; flex-direction:column; box-shadow:-20px 0 60px rgba(0,245,255,0.1); }
+.cart-sidebar.open { right:0; }
+.cart-header { padding:1.5rem; border-bottom:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:space-between; }
+.cart-header h2 { font-family:'Orbitron',monospace; font-size:1.1rem; color:var(--neon-cyan); text-shadow:0 0 10px rgba(0,245,255,0.4); }
+.close-btn { background:transparent; border:1px solid #333; color:var(--text-muted); width:36px; height:36px; border-radius:4px; cursor:pointer; font-size:1.2rem; transition:all 0.3s; display:flex; align-items:center; justify-content:center; min-width:36px; }
+.close-btn:hover { border-color:var(--neon-pink); color:var(--neon-pink); box-shadow:0 0 10px rgba(255,0,170,0.3); }
+.cart-items { flex:1; overflow-y:auto; padding:1.5rem; }
+.cart-empty { text-align:center; padding:3rem 1rem; color:var(--text-muted); }
+.cart-empty .cart-empty-icon { font-size:3rem; margin-bottom:1rem; display:block; }
+.cart-item { display:flex; gap:1rem; padding:1rem 0; border-bottom:1px solid rgba(255,255,255,0.05); align-items:flex-start; }
+.cart-item-img { width:60px; height:60px; border-radius:6px; object-fit:cover; border:1px solid var(--border-subtle); flex-shrink:0; }
+.cart-item-info { flex:1; }
+.cart-item-name { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:0.9rem; color:var(--text-main); margin-bottom:0.2rem; }
+.cart-item-variant { font-size:0.7rem; color:var(--neon-purple); margin-bottom:0.1rem; }
+.cart-item-price { font-family:'Orbitron',monospace; font-size:0.85rem; color:var(--neon-cyan); }
+.cart-item-qty { display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; }
+.qty-btn { background:transparent; border:1px solid #333; color:var(--text-main); width:28px; height:28px; border-radius:3px; cursor:pointer; font-size:0.9rem; transition:all 0.2s; display:flex; align-items:center; justify-content:center; min-width:28px; }
+.qty-btn:hover { border-color:var(--neon-cyan); color:var(--neon-cyan); }
+.qty-num { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:0.9rem; min-width:24px; text-align:center; }
+.remove-item { background:transparent; border:none; color:#444; cursor:pointer; font-size:1rem; transition:color 0.2s; padding:0.25rem; min-width:28px; }
+.remove-item:hover { color:var(--neon-pink); }
+.cart-footer { padding:1.5rem; border-top:1px solid var(--border-subtle); }
+.cart-total { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+.cart-total-label { font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.9rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; }
+.cart-total-amount { font-family:'Orbitron',monospace; font-size:1.4rem; font-weight:700; color:var(--neon-cyan); text-shadow:0 0 15px rgba(0,245,255,0.4); }
+.checkout-btn { width:100%; padding:1rem; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1rem; letter-spacing:2px; text-transform:uppercase; background:linear-gradient(135deg,rgba(0,245,255,0.15),rgba(191,0,255,0.15)); border:1px solid var(--neon-cyan); color:var(--neon-cyan); border-radius:6px; cursor:pointer; transition:all 0.3s; box-shadow:0 0 20px rgba(0,245,255,0.2); }
+.checkout-btn:hover { box-shadow:0 0 40px rgba(0,245,255,0.5),0 0 80px rgba(0,245,255,0.15); background:linear-gradient(135deg,rgba(0,245,255,0.25),rgba(191,0,255,0.25)); }
+
+/* ============ MODALS ============ */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:3000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(8px); padding:1rem; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--bg-card2); border:1px solid var(--border-subtle); border-radius:16px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; box-shadow:0 0 60px rgba(0,245,255,0.15),0 0 120px rgba(191,0,255,0.1); }
+.modal-header { padding:1.75rem 2rem 1rem; border-bottom:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:var(--bg-card2); z-index:1; }
+.modal-header h2 { font-family:'Orbitron',monospace; font-size:1.1rem; color:var(--neon-cyan); }
+.modal-body { padding:1.75rem 2rem; }
+.form-group { margin-bottom:1.25rem; }
+.form-label { display:block; font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.8rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.4rem; }
+.form-input { width:100%; padding:0.75rem 1rem; background:rgba(255,255,255,0.03); border:1px solid #1a2040; border-radius:6px; color:var(--text-main); font-family:'Inter',sans-serif; font-size:0.9rem; transition:all 0.3s; min-height:44px; }
+.form-input:focus { outline:none; border-color:var(--neon-cyan); box-shadow:0 0 15px rgba(0,245,255,0.15); }
+.bank-info-box { background:rgba(0,245,255,0.04); border:1px solid rgba(0,245,255,0.2); border-radius:8px; padding:1.25rem; margin:1.5rem 0; }
+.bank-info-title { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:0.8rem; letter-spacing:2px; text-transform:uppercase; color:var(--neon-cyan); margin-bottom:0.75rem; }
+.bank-info-item { display:flex; justify-content:space-between; padding:0.35rem 0; font-size:0.85rem; border-bottom:1px solid rgba(255,255,255,0.05); }
+.bank-info-item:last-child { border:none; }
+.bank-info-item .label { color:var(--text-muted); }
+.bank-info-item .value { color:var(--text-main); font-weight:500; }
+.order-summary { background:rgba(255,255,255,0.02); border:1px solid #1a2040; border-radius:8px; padding:1.25rem; margin-bottom:1.5rem; }
+.order-summary-title { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:0.8rem; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.75rem; }
+.order-summary-item { display:flex; justify-content:space-between; font-size:0.85rem; padding:0.3rem 0; }
+.order-summary-total { display:flex; justify-content:space-between; font-family:'Orbitron',monospace; font-size:1rem; padding-top:0.75rem; margin-top:0.5rem; border-top:1px solid var(--border-subtle); color:var(--neon-cyan); }
+.wa-send-btn { width:100%; padding:1.1rem; background:linear-gradient(135deg,#25D366,#128C7E); border:none; border-radius:8px; color:#fff; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1rem; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; justify-content:center; gap:0.75rem; box-shadow:0 4px 20px rgba(37,211,102,0.3); min-height:52px; }
+.wa-send-btn:hover { box-shadow:0 4px 40px rgba(37,211,102,0.5); transform:translateY(-2px); }
+
+/* PRODUCT DETAIL MODAL */
+.product-modal-inner { max-width:700px; }
+.product-modal-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
+.product-modal-img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; border:1px solid var(--border-subtle); display:block; }
+.product-modal-info { display:flex; flex-direction:column; gap:1rem; }
+.product-modal-cat { font-family:'Rajdhani',sans-serif; font-size:0.65rem; letter-spacing:3px; text-transform:uppercase; color:var(--neon-purple); }
+.product-modal-name { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.4rem; color:var(--text-main); line-height:1.25; }
+.product-modal-desc { font-size:0.85rem; color:var(--text-muted); line-height:1.7; }
+.product-modal-price { font-family:'Orbitron',monospace; font-size:1.6rem; font-weight:700; color:var(--neon-cyan); text-shadow:0 0 20px rgba(0,245,255,0.4); }
+.variant-group { margin-top:0.5rem; }
+.variant-label { font-family:'Rajdhani',sans-serif; font-size:0.7rem; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.5rem; display:block; }
+.variant-options { display:flex; flex-wrap:wrap; gap:0.5rem; }
+.variant-opt { padding:0.35rem 0.75rem; border:1px solid #1a2040; border-radius:4px; background:transparent; color:var(--text-muted); font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.8rem; cursor:pointer; transition:all 0.2s; min-height:32px; }
+.variant-opt:hover { border-color:var(--neon-cyan); color:var(--neon-cyan); }
+.variant-opt.selected { border-color:var(--neon-cyan); color:var(--neon-cyan); background:rgba(0,245,255,0.1); box-shadow:0 0 10px rgba(0,245,255,0.2); }
+.modal-add-btn { width:100%; padding:0.95rem; background:rgba(0,245,255,0.08); border:1px solid var(--neon-cyan); color:var(--neon-cyan); border-radius:6px; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:0.95rem; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:all 0.3s; box-shadow:0 0 15px rgba(0,245,255,0.2); min-height:50px; }
+.modal-add-btn:hover { background:rgba(0,245,255,0.15); box-shadow:0 0 30px rgba(0,245,255,0.5); }
+.modal-add-btn:disabled { border-color:#333; color:#444; cursor:not-allowed; box-shadow:none; background:transparent; }
+
+/* ============ STATS ============ */
+.stats-section { position:relative; z-index:1; padding:4rem 1.5rem; background:linear-gradient(180deg,transparent,rgba(0,245,255,0.03),transparent); border-top:1px solid var(--border-subtle); border-bottom:1px solid var(--border-subtle); }
+.stats-grid { max-width:900px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:2rem; text-align:center; }
+.stat-number { font-family:'Orbitron',monospace; font-size:2.5rem; font-weight:900; color:var(--neon-cyan); text-shadow:0 0 20px rgba(0,245,255,0.4); display:block; }
+.stat-label { font-family:'Rajdhani',sans-serif; font-size:0.8rem; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-top:0.5rem; }
+
+/* ============ FOOTER ============ */
+footer { position:relative; z-index:1; padding:3rem 1.5rem; text-align:center; border-top:1px solid var(--border-subtle); }
+.footer-logo { font-family:'Orbitron',monospace; font-size:1.5rem; font-weight:900; color:var(--neon-cyan); text-shadow:0 0 20px rgba(0,245,255,0.4); margin-bottom:1rem; }
+.footer-logo span { color:var(--neon-purple); }
+.footer-text { color:var(--text-muted); font-size:0.85rem; line-height:1.7; }
+
+/* ============ TOAST ============ */
+.toast { position:fixed; bottom:5.5rem; right:1.5rem; background:var(--bg-card2); border:1px solid var(--neon-green); color:var(--neon-green); padding:0.85rem 1.25rem; border-radius:8px; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:0.9rem; z-index:9998; box-shadow:0 0 20px rgba(0,255,136,0.3); transform:translateY(120px); opacity:0; transition:all 0.35s cubic-bezier(.25,.8,.25,1); max-width:300px; }
+.toast.show { transform:translateY(0); opacity:1; }
+.no-products { text-align:center; padding:4rem 1rem; color:var(--text-muted); grid-column:1/-1; }
+
+/* ============ SEARCH ============ */
+.search-wrap { max-width:480px; margin:0 auto 2rem; position:relative; }
+.search-input { width:100%; padding:0.85rem 1rem 0.85rem 3rem; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:8px; color:var(--text-main); font-family:'Inter',sans-serif; font-size:0.9rem; transition:all 0.3s; min-height:44px; }
+.search-input:focus { outline:none; border-color:var(--neon-cyan); box-shadow:0 0 15px rgba(0,245,255,0.15); }
+.search-icon { position:absolute; left:1rem; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:1rem; }
+
+/* ============ WHATSAPP FLOAT ============ */
+.wa-float { position:fixed; bottom:1.5rem; right:1.5rem; z-index:500; }
+.wa-float-btn { display:flex; align-items:center; justify-content:center; width:56px; height:56px; background:linear-gradient(135deg,#25D366,#128C7E); border-radius:50%; box-shadow:0 4px 25px rgba(37,211,102,0.5); text-decoration:none; transition:all 0.3s; animation:waPulse 2.5s ease-in-out infinite; }
+.wa-float-btn:hover { transform:scale(1.12); box-shadow:0 6px 35px rgba(37,211,102,0.7); animation:none; }
+@keyframes waPulse { 0%,100%{box-shadow:0 4px 25px rgba(37,211,102,0.5),0 0 0 0 rgba(37,211,102,0.3)} 50%{box-shadow:0 4px 25px rgba(37,211,102,0.5),0 0 0 10px rgba(37,211,102,0)} }
+.wa-float-btn svg { width:28px; height:28px; fill:#fff; }
+.wa-float-tooltip { position:absolute; right:68px; top:50%; transform:translateY(-50%); background:var(--bg-card2); border:1px solid rgba(37,211,102,0.4); color:#25D366; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:0.8rem; letter-spacing:1px; padding:0.35rem 0.75rem; border-radius:4px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.wa-float:hover .wa-float-tooltip { opacity:1; }
+
+/* ============ ADMIN LINK ============ */
+.admin-floating { position:fixed; bottom:1.5rem; left:1.5rem; z-index:500; }
+.admin-floating a { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.85rem; background:rgba(10,15,30,0.9); border:1px solid #1a2040; border-radius:4px; color:#444; font-family:'Rajdhani',sans-serif; font-size:0.7rem; letter-spacing:1px; text-decoration:none; transition:all 0.3s; }
+.admin-floating a:hover { border-color:var(--neon-purple); color:var(--neon-purple); box-shadow:0 0 10px rgba(191,0,255,0.2); }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:var(--bg-dark); }
+::-webkit-scrollbar-thumb { background:rgba(0,245,255,0.3); border-radius:2px; }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:900px) { .product-modal-grid{grid-template-columns:1fr} .product-modal-inner{max-width:480px} }
+@media (max-width:768px) {
+  .nav-links{display:none} .hamburger{display:flex}
+  .cart-sidebar{width:100%;right:-100%} .cart-sidebar.open{right:0}
+  .products-grid{grid-template-columns:repeat(2,1fr);gap:0.75rem}
+  .featured-grid{grid-template-columns:repeat(2,1fr);gap:0.75rem}
+  .cat-grid{grid-template-columns:repeat(3,1fr)}
+  .hero h1{font-size:clamp(2rem,10vw,3.5rem)}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .modal-body{padding:1.25rem} .modal-header{padding:1.25rem}
+  .products-section{padding:2rem 0.75rem 5rem}
+  .categories-section{padding:3rem 0.75rem}
+  .featured-section{padding:2.5rem 0.75rem}
+  .toast{right:0.75rem;bottom:5rem;max-width:calc(100vw - 1.5rem)}
+}
+@media (max-width:480px) {
+  nav{padding:0 1rem} .nav-logo{font-size:1rem}
+  .products-grid{grid-template-columns:repeat(2,1fr);gap:0.5rem}
+  .cat-grid{grid-template-columns:repeat(3,1fr);gap:0.4rem}
+  .product-info{padding:0.85rem} .product-name{font-size:0.85rem}
+  .product-price{font-size:0.95rem} .add-cart-btn{padding:0.4rem 0.6rem;font-size:0.65rem}
+}
+</style>
+</head>
+<body>
+
+<canvas id="vapor-canvas"></canvas>
+
+<!-- NAVBAR -->
+<nav>
+  <a class="nav-logo" href="#">THE <span>BIG</span> CLOUD</a>
+  <ul class="nav-links">
+    <li><a href="#destacados">Destacados</a></li>
+    <li><a href="#productos">Productos</a></li>
+    <li><a href="#categorias">Categorías</a></li>
+    <li><a id="nav-wa-link" href="#" target="_blank">Contacto</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="cart-btn" onclick="toggleCart()">
+      🛒 Carrito
+      <span class="cart-count" id="cart-count">0</span>
+    </button>
+    <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav" id="mobile-nav">
+  <a href="#destacados" onclick="closeMobileNav()">⭐ Destacados</a>
+  <a href="#productos" onclick="closeMobileNav()">📦 Productos</a>
+  <a href="#categorias" onclick="closeMobileNav()">🏷 Categorías</a>
+  <a id="mobile-wa-link" href="#" target="_blank" onclick="closeMobileNav()">💬 WhatsApp</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-gradient"></div>
+  <div class="hero-content">
+    <span class="hero-tag">⚡ Valentín Alsina · Lunes a Viernes 15-20hs</span>
+    <h1><span class="line1">ELEVA TU</span><span class="line2">EXPERIENCIA</span></h1>
+    <p class="hero-sub">La tienda de vape más completa de la zona. Salts, pods, kits, e-líquidos y mucho más. Asesoramiento personalizado.</p>
+    <div class="hero-cta">
+      <a href="#productos" class="btn-neon btn-cyan">Ver Productos</a>
+      <a id="hero-wa-btn" href="#" target="_blank" class="btn-neon btn-purple">WhatsApp</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-section">
+  <div class="stats-grid">
+    <div><span class="stat-number">+400</span><div class="stat-label">Productos</div></div>
+    <div><span class="stat-number">123</span><div class="stat-label">Salts Importadas</div></div>
+    <div><span class="stat-number">79</span><div class="stat-label">E-Líquidos Import.</div></div>
+    <div><span class="stat-number">5★</span><div class="stat-label">Atención</div></div>
+  </div>
+</div>
+
+<!-- FEATURED -->
+<section class="featured-section" id="destacados">
+  <div class="section-header">
+    <div class="section-tag">// destacados</div>
+    <h2 class="section-title">Productos <span>Destacados</span></h2>
+  </div>
+  <div class="featured-grid" id="featured-grid"></div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="categories-section" id="categorias">
+  <div class="section-header">
+    <div class="section-tag">// explorar</div>
+    <h2 class="section-title">Nuestras <span>Categorías</span></h2>
+  </div>
+  <div class="cat-grid" id="cat-grid"></div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="products-section" id="productos">
+  <div class="section-header">
+    <div class="section-tag">// catálogo</div>
+    <h2 class="section-title">Nuestros <span>Productos</span></h2>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="search-input" placeholder="Buscar productos..." oninput="filterProducts()">
+    </div>
+  </div>
+  <div class="products-grid" id="products-grid"></div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">THE <span>BIG</span> CLOUD</div>
+  <p class="footer-text">
+    Valentín Alsina, Buenos Aires · L-V 15:00 a 20:00hs<br>
+    Showroom · Envíos · Retiro en local<br><br>
+    <small style="color:#333;">© 2025 The Big Cloud. Todos los derechos reservados.</small>
+  </p>
+</footer>
+
+<!-- WA FLOAT -->
+<div class="wa-float" id="wa-float-wrap">
+  <span class="wa-float-tooltip">Consultanos</span>
+  <a class="wa-float-btn" id="wa-float-btn" href="#" target="_blank" aria-label="WhatsApp">
+    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  </a>
+</div>
+
+<!-- ADMIN LINK -->
+<div class="admin-floating">
+  <a href="admin.html">⚙ Admin</a>
+</div>
+
+<!-- CART -->
+<div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+<div class="cart-sidebar" id="cart-sidebar">
+  <div class="cart-header">
+    <h2>🛒 Tu Carrito</h2>
+    <button class="close-btn" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cart-items">
+    <div class="cart-empty"><span class="cart-empty-icon">💨</span><p>Tu carrito está vacío</p></div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span class="cart-total-label">Total</span>
+      <span class="cart-total-amount" id="cart-total">$0</span>
+    </div>
+    <button class="checkout-btn" onclick="openCheckout()">Finalizar Pedido →</button>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkout-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>📦 Finalizar Pedido</h2>
+      <button class="close-btn" onclick="closeCheckout()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Tu Nombre</label>
+        <input type="text" class="form-input" id="checkout-name" placeholder="Ej: Matías García">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Teléfono / WhatsApp</label>
+        <input type="tel" class="form-input" id="checkout-phone" placeholder="+54 9 11 0000-0000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dirección (si quiere envío)</label>
+        <input type="text" class="form-input" id="checkout-address" placeholder="Calle, número, barrio... (opcional)">
+      </div>
+      <div class="order-summary" id="checkout-summary"></div>
+      <div class="bank-info-box" id="bank-info-box"></div>
+      <button class="wa-send-btn" onclick="sendWhatsApp()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Enviar Pedido por WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT DETAIL MODAL -->
+<div class="modal-overlay" id="product-detail-modal">
+  <div class="modal product-modal-inner">
+    <div class="modal-header">
+      <h2 id="pmodal-title">Detalle del Producto</h2>
+      <button class="close-btn" onclick="closeProductModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="product-modal-grid">
+        <div><img id="pmodal-img" class="product-modal-img" src="" alt=""></div>
+        <div class="product-modal-info">
+          <div class="product-modal-cat" id="pmodal-cat"></div>
+          <div class="product-modal-name" id="pmodal-name"></div>
+          <div class="product-modal-desc" id="pmodal-desc"></div>
+          <div class="product-modal-price" id="pmodal-price"></div>
+          <div id="pmodal-variants"></div>
+          <button class="modal-add-btn" id="pmodal-add-btn" onclick="addFromModal()">+ Agregar al Carrito</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ SMOKE RINGS ANIMATION ============
+const canvas = document.getElementById('vapor-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, rings=[], trails=[];
+function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+resize(); window.addEventListener('resize',resize);
+
+class SmokeRing {
+  constructor(ox,oy){
+    this.x=ox!=null?ox:Math.random()*W;
+    this.y=oy!=null?oy:H*0.65+Math.random()*H*0.35;
+    this.r=Math.random()*18+8;
+    this.thick=Math.random()*18+10;
+    this.vy=-(Math.random()*0.9+0.4);
+    this.vx=(Math.random()-0.5)*0.35;
+    this.opacity=Math.random()*0.55+0.2;
+    this.life=0;
+    this.maxLife=Math.random()*280+140;
+    this.hue=Math.random()>0.5?190:280;
+    this.tilt=(Math.random()-0.5)*0.5;
+    this.wobble=Math.random()*0.025+0.008;
+    this.growRate=Math.random()*0.18+0.07;
+    this.scaleY=Math.random()*0.15+0.28;
+  }
+  update(){
+    this.life++;
+    this.y+=this.vy;
+    this.x+=this.vx+Math.sin(this.life*this.wobble)*0.4;
+    this.r+=this.growRate;
+    this.tilt+=(Math.random()-0.5)*0.008;
+    return this.life>=this.maxLife||this.y<-this.r*4;
+  }
+  draw(){
+    const p=this.life/this.maxLife;
+    const a=this.opacity*Math.sin(Math.PI*p)*(1-p*0.4);
+    ctx.save();
+    ctx.translate(this.x,this.y);
+    ctx.rotate(this.tilt);
+    ctx.scale(1,this.scaleY+Math.sin(this.life*0.018)*0.05);
+    ctx.shadowColor=`hsla(${this.hue},100%,65%,${a*0.6})`;
+    ctx.shadowBlur=18;
+    ctx.strokeStyle=`hsla(${this.hue},100%,72%,${a})`;
+    ctx.lineWidth=this.thick;
+    ctx.beginPath();
+    ctx.arc(0,0,this.r,0,Math.PI*2);
+    ctx.stroke();
+    // inner highlight
+    ctx.strokeStyle=`hsla(${this.hue},100%,92%,${a*0.4})`;
+    ctx.lineWidth=this.thick*0.25;
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+class SmokeTrail {
+  constructor(){
+    this.x=Math.random()*W;
+    this.y=H+30;
+    this.r=Math.random()*55+18;
+    this.vy=-(Math.random()*0.55+0.18);
+    this.vx=(Math.random()-0.5)*0.38;
+    this.opacity=Math.random()*0.18+0.04;
+    this.life=0;
+    this.maxLife=Math.random()*380+180;
+    this.hue=Math.random()>0.5?190:280;
+    this.spread=Math.random()*0.22+0.04;
+  }
+  update(){
+    this.y+=this.vy; this.x+=this.vx;
+    this.r+=this.spread; this.life++;
+    return this.life>=this.maxLife||this.y<-this.r;
+  }
+  draw(){
+    const p=this.life/this.maxLife;
+    const a=this.opacity*Math.sin(Math.PI*p);
+    const g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r);
+    g.addColorStop(0,`hsla(${this.hue},80%,65%,${a})`);
+    g.addColorStop(1,`hsla(${this.hue},80%,65%,0)`);
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fill();
+  }
+}
+
+// seed initial rings at various lifecycle stages
+for(let i=0;i<9;i++){const r=new SmokeRing();r.life=Math.floor(Math.random()*r.maxLife*0.65);r.y=Math.random()*H;rings.push(r);}
+for(let i=0;i<13;i++){const t=new SmokeTrail();t.life=Math.floor(Math.random()*t.maxLife);t.y=Math.random()*H;trails.push(t);}
+
+let _fc=0;
+function animVapor(){
+  ctx.clearRect(0,0,W,H);
+  _fc++;
+  if(_fc%85===0) rings.push(new SmokeRing());
+  if(_fc%42===0&&Math.random()>0.45){
+    // O-ring burst — quick expanding bright ring
+    const b=new SmokeRing(W*0.25+Math.random()*W*0.5, H*0.55+Math.random()*H*0.35);
+    b.r=4; b.growRate=0.65; b.thick=8; b.opacity=0.85; b.maxLife=100; b.scaleY=0.32;
+    rings.push(b);
+  }
+  if(_fc%28===0) trails.push(new SmokeTrail());
+  for(let i=trails.length-1;i>=0;i--){if(trails[i].update())trails.splice(i,1);else trails[i].draw();}
+  for(let i=rings.length-1;i>=0;i--){if(rings[i].update())rings.splice(i,1);else rings[i].draw();}
+  while(rings.length>22)rings.shift();
+  while(trails.length>16)trails.shift();
+  requestAnimationFrame(animVapor);
+}
+animVapor();
+
+// ============ CONFIG ============
+function getConfig(){
+  return {
+    waNumber: localStorage.getItem('tbc_wa_number') || '5491171029232',
+    alias: localStorage.getItem('tbc_alias') || 'THEBIGCLOUD.VAPE',
+    cbu: localStorage.getItem('tbc_cbu') || '0000003100012345678900',
+    titular: localStorage.getItem('tbc_titular') || 'The Big Cloud S.A.S.',
+    banco: localStorage.getItem('tbc_banco') || 'Mercado Pago / Brubank',
+  };
+}
+function applyConfig(){
+  const cfg=getConfig();
+  const waUrl=`https://wa.me/${cfg.waNumber}`;
+  ['nav-wa-link','mobile-wa-link','hero-wa-btn'].forEach(id=>{ const el=document.getElementById(id); if(el) el.href=waUrl; });
+  const fb=document.getElementById('wa-float-btn'); if(fb) fb.href=waUrl;
+  const box=document.getElementById('bank-info-box');
+  if(box) box.innerHTML=`
+    <div class="bank-info-title">💳 Datos Bancarios para Transferencia</div>
+    <div class="bank-info-item"><span class="label">Banco</span><span class="value">${cfg.banco}</span></div>
+    <div class="bank-info-item"><span class="label">Alias</span><span class="value">${cfg.alias}</span></div>
+    <div class="bank-info-item"><span class="label">CBU</span><span class="value">${cfg.cbu}</span></div>
+    <div class="bank-info-item"><span class="label">Titular</span><span class="value">${cfg.titular}</span></div>
+    <div style="margin-top:0.75rem;font-size:0.78rem;color:var(--neon-pink);">⚠ Enviá el comprobante por WhatsApp para confirmar tu pedido</div>
+  `;
+}
+
+// ============ SVG PLACEHOLDER ============
+const neonColors=['00f5ff','bf00ff','ff00aa','00ff88'];
+function svgPlaceholder(name, hex){
+  const initials=name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'TBC';
+  const c=hex||'00f5ff';
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><defs><radialGradient id="g" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#${c}" stop-opacity="0.15"/><stop offset="100%" stop-color="#050810" stop-opacity="1"/></radialGradient></defs><rect width="400" height="400" fill="#0a0f1e"/><rect width="400" height="400" fill="url(#g)"/><rect x="2" y="2" width="396" height="396" fill="none" stroke="#${c}" stroke-width="1.5" opacity="0.4"/><text x="200" y="195" font-family="monospace" font-size="72" font-weight="bold" fill="#${c}" text-anchor="middle" opacity="0.85">${initials}</text><text x="200" y="240" font-family="monospace" font-size="13" fill="#${c}" text-anchor="middle" opacity="0.4" letter-spacing="4">THE BIG CLOUD</text></svg>`;
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+
+// ============ PRODUCTS DATA ============
+const defaultProducts = [
+  {id:1,name:'VAPORESSO XROS PRO',category:'PODS RECARGABLES',price:90902,desc:'Pod recargable con batería 1200mAh, carga USB-C rápida (35 min), capacidad 3ml, pantalla OLED, tecnología COREX y chip AXON. Compatible con cartuchos serie XROS.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748580148831.jpg',badge:'hot',stock:true,featured:true,variants:[]},
+  {id:2,name:'VAPORESSO XROS 5',category:'PODS RECARGABLES',price:91802,desc:'Último lanzamiento. Batería 1500mAh, pantalla color 0.88", potencia ajustable hasta 30W, flujo de aire ajustable, compatible con toda la serie XROS. MTL y RDL.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748580431725.jpg',badge:'new',stock:true,featured:false,variants:[]},
+  {id:3,name:'VAPORESSO XROS NANO 4',category:'PODS RECARGABLES',price:93502,desc:'Diseño compacto y portátil, ideal para llevar en el bolsillo. Alta calidad de construcción, sabor excepcional y larga duración de batería.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748582249865.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:4,name:'OXVA XLIM PRO',category:'PODS RECARGABLES',price:81502,desc:'Nueva edición Pro con más potencia, cambio más rápido y larga duración de batería. El vapeo más placentero de la línea XLIM.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748582551148.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:5,name:'OXVA XLIM SQ PRO',category:'PODS RECARGABLES',price:83902,desc:'Formato cuadrado ergonómico de la línea XLIM PRO. Potencia mejorada, batería duradera y sistema de llenado superior. Ideal para salts y freebase.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748582951584.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:6,name:'SMOK NOVO X',category:'PODS RECARGABLES',price:50302,desc:'Pod compacto con pantalla OLED, 800mAh, coils Meshed 0.8Ω y 1.0Ω incluidos. Diseño ergonómico de bolsillo. Carga USB-C.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748584148666.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:7,name:'UWELL KOKO PRIME',category:'PODS RECARGABLES',price:48602,desc:'Pod ultra compacto con tecnología Pro-FOCS, 690mAh, cartridge de 2ml. Carga USB-C. Sabor limpio y consistente en cada calada.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748584471586.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:8,name:'VOPOO DRAG NANO 2',category:'PODS RECARGABLES',price:51502,desc:'Ultra compacto con chip GENE.NS, cartridge de 3ml, coil Drag 0.8Ω. Perfecto para salts de alta concentración. Diseño de bolsillo.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748584651830.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:9,name:'VAPORESSO GEN MAX 220W',category:'KIT AVANZADO',price:179002,desc:'Funciona con dos baterías 18650 (no incluidas), rango 5-220W. Incluye iTank T con flujo de aire superior. Pantalla a color TFT.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748588551523.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:10,name:'VOPOO DRAG 5 KIT',category:'KIT AVANZADO',price:178002,desc:'Kit de inicio 177W con chasis de aleación de zinc y cuero, configuración dual 18650. Chip GENE.FAN 2.0, pantalla TFT 1.08".',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748588789187.jpg',badge:'new',stock:true,featured:false,variants:[]},
+  {id:11,name:'LOST VAPE THELEMA QUEST 200W',category:'KIT AVANZADO',price:188902,desc:'Combinación de mod Thelema Quest 200W y tank UB Pro Pod de 5ml. Dual 18650 (no incluidas), chip UB Pro, pantalla 0.96" a color.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1749789682039.jpg',badge:'new',stock:true,featured:false,variants:[]},
+  {id:12,name:'LOST VAPE THELEMA SOLO 100W',category:'KIT AVANZADO',price:153502,desc:'Salida 5-100W con control de temperatura, una batería 18650 o 21700 (no incluidas). Aleación de zinc premium, pantalla 0.96".',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1749789761833.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:13,name:'GEEK VAPE T200 KIT',category:'KIT AVANZADO',price:205502,desc:'Kit con pantalla táctil Aegis T200, control de temperatura completo, Zeus Tank 2021, dual 18650. Resistente al agua, polvo y golpes.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1749790022209.jpg',badge:'hot',stock:true,featured:true,variants:[]},
+  {id:14,name:'GEEK VAPE LEGEND 200 MOD',category:"MOD'S",price:145802,desc:'Solo mod 200W con chip AS-200, resistente al agua IP67, dual 18650 (no incluidas). Pantalla OLED, construcción premium aleación de zinc.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748589745683.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:15,name:'BATERIA EFEST 18650',category:'BATERIAS',price:19902,desc:'Batería EFEST White&Purple 18650, 3000mAh, 35A descarga continúa. Dimensiones: 18.5mm x 65.20mm. Ideal para mods regulados y mecánicos.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748598848194.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:16,name:'BATERIA VAPCELL T42 21700',category:'BATERIAS',price:36402,desc:'Vapcell T42 21700 4200mAh, 35A/50A. Alta capacidad para mods de gran demanda. Tamaño: 21.5 x 70.1mm.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748599019798.jpg',badge:'sale',stock:true,featured:false,variants:[]},
+  {id:17,name:'BATERIA SAMSUNG 30T 21700',category:'BATERIAS',price:27902,desc:'Samsung 21700 30T, 3000mAh, descarga continua alta. Alto rendimiento para usuarios avanzados que buscan potencia y autonomía.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748599342335.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:18,name:'KINGS CREST TABACO DULCE 120ML',category:'E LÍQUID IMPORTADOS',price:35902,desc:'Don Juan Honey. Sabor dulce de vapeo en formato nic salts importado. 120ml / 3mg. Max VG.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748600002921.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:19,name:'DON JUAN RESERVÉ ULTRA 120ML',category:'E LÍQUID IMPORTADOS',price:35902,desc:'Descubre el sabor incomparable de Don Juan Reserve Ultra de Kings Crest. Combinación exquisita de sabores premium. 120ml / 3mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748935169380.jpg',badge:'new',stock:true,featured:false,variants:[]},
+  {id:20,name:'KINGS CREST DON JUAN CAFE 120ML',category:'E LÍQUID IMPORTADOS',price:35902,desc:'Café mocaccino americano con toques de chocolate. Sigue la receta del Don Juan original con sabor intenso. 120ml / 3mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748600895921.jpg',badge:'hot',stock:true,featured:true,variants:[]},
+  {id:21,name:'KINGS CREST ALDONZA 120ML',category:'E LÍQUID IMPORTADOS',price:35902,desc:'Tarta de chocolate con nueces pecanas, vainilla y notas de tabaco envejecido en barrica. Una obra maestra. 120ml / 3mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748600632864.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:22,name:'KINGS CREST GRAPE ICE 120ML',category:'E LÍQUID IMPORTADOS',price:35902,desc:'Uva con toque helado. Refrescante y frutal. 120ml / 3mg. Una de las líneas más populares de Kings Crest.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748664437320.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:23,name:'KINGS CREST MIX BERRYS ICE 120ML',category:'E LÍQUID IMPORTADOS',price:35902,desc:'Mix explosivo de berries con hielo. Fresco, frutal e intenso. 120ml / 3mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748664724225.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:24,name:'KINGS CREST MANGO BERRY ICE 120ML',category:'E LÍQUID IMPORTADOS',price:35902,desc:'Mango tropical con mezcla de berries y un toque helado irresistible. 120ml / 3mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748664893589.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:25,name:'MONSTER FRUIT MANGO PEACH GUAVA 100ML',category:'E LÍQUID IMPORTADOS',price:35902,desc:'Mango, durazno y guayaba con hielo. Tropical y refrescante. 100ml / 3mg. Línea Monster Fruit.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748666891331.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:26,name:'MONSTER CUSTARD VAINILLA 100ML',category:'E LÍQUID IMPORTADOS',price:34002,desc:'Crema de vainilla suave y deliciosa. Postre cremoso en cada calada. 100ml / 0mg. Línea Monster Custard.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748667460540.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:27,name:'NASTY LYCHEE 60ML',category:'E LÍQUID IMPORTADOS',price:25902,desc:'Lichi tropical dulce con toque mentolado. Línea Nasty Juice. 60ml / 3mg. Importado desde Malasia.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748673694404.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:28,name:'NASTY CUSHMAN MANGO HIGH MINT 60ML',category:'E LÍQUID IMPORTADOS',price:25902,desc:'Mango Cushman con menta intensa. El clásico más vendido de Nasty Juice. 60ml / 3mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748675358529.jpg',badge:'hot',stock:true,featured:false,variants:[]},
+  {id:29,name:'NASTY BLACKURRANT 60ML',category:'E LÍQUID IMPORTADOS',price:25902,desc:'Grosella negra intensa y refrescante. Línea Nasty Juice. 60ml / 3mg. Importado.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748674523821.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:30,name:'MAGNA ROYAL GOLD 60ML',category:'E LÍQUID IMPORTADOS',price:18902,desc:'Sabor tabaco rubio con notas de miel y vainilla. Línea Magna. 60ml / 3mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748672589853.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:31,name:'MR FREEZE LUSH FROST 100ML',category:'E LÍQUID IMPORTADOS',price:31902,desc:'Frutas tropicales con mentol extremo. Frío intenso en cada calada. 100ml / 3mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748801609774.jpg',badge:'sale',stock:true,featured:false,variants:[]},
+  {id:32,name:'REAL FLOW BERRY MIX 60ML',category:'E LIQUIDS NACIONALES',price:15502,desc:'Mix explosivo de frutos rojos con toque cítrico. E-liquid nacional de alta calidad. 60ml / 3mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748832398873.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:33,name:'REAL FLOW CRAZY CACTUS 60ML',category:'E LIQUIDS NACIONALES',price:15502,desc:'Kiwi, guayaba y cactus. Tropical sin frío. Para amantes de los frutales. 60ml / 3mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748832544427.jpg',badge:'new',stock:true,featured:false,variants:[]},
+  {id:34,name:'REAL FLOW MANGO BEAST 60ML',category:'E LIQUIDS NACIONALES',price:15502,desc:'Mango intenso y jugoso. E-liquid nacional premium. 60ml / 3mg. Producción argentina.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748832631859.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:35,name:'REAL FLOW BUTTERSCOTCH 60ML',category:'E LIQUIDS NACIONALES',price:15502,desc:'Crema suave de caramelo con vainilla. Dulce irresistible en cada bocanada. 60ml / 3mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748832694306.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:36,name:'ATOMIZADOR VAPORESSO NRG MINI',category:'ATOMIZADORES',price:31902,desc:'Tank NRG-S Mini de 2ml, flavor inmejorable con resistencias GT. Diseño compacto y versátil para mods avanzados.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748848658995.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:37,name:'DOVPO BLOTTO SINGLE RTA',category:'ATOMIZADORES',price:68902,desc:'Diseñado por Vaping Bogan. Versatilidad y gran producción de vapor en formato single coil. Deck innovador para builds avanzados.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748848828528.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:38,name:'GEEK VAPE ZEUS II X MESH RTA',category:'ATOMIZADORES',price:66502,desc:'Evolución del clásico Zeus X. Combina lo mejor del predecesor con nueva tecnología mesh. Sabor supremo y fácil rebuildable.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748849265656.jpg',badge:'sale',stock:true,featured:false,variants:[]},
+  {id:39,name:'RESISTENCIA HELL VAPE MESH x10',category:'RESISTENCIAS',price:19902,desc:'Bobinas de repuesto de malla para Dead Rabbit M RTA. 0.15Ω. Pack de 10 unidades. Alta duración.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1749020139261.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:40,name:'RESISTENCIA CALIBURN G3 0.6Ω',category:'RESISTENCIAS',price:10002,desc:'Pod de repuesto Caliburn G3, 0.6Ω, capacidad 4.5ml. Calada moderada y versátil. Diseño de recarga fácil.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1749020359619.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:41,name:'LATTAFA FAKHAR GOLD 100ML',category:'PERFUMERIA ARABE',price:52902,desc:'Fragancia unisex con notas de cardamomo, toronjo y madera. Extrait de Perfume premium. 100ml.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1749104314976.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:42,name:'LATTAFA ANA ABIYEDH 60ML',category:'PERFUMERIA ARABE',price:40902,desc:'Fragancia unisex con almizcle blanco, vainilla, azafrán y cardamomo. Fondo de aceite de cipriol. 60ml.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1749104577659.jpg',badge:'new',stock:true,featured:false,variants:[]},
+  {id:43,name:'AFNAN 9PM 100ML',category:'PERFUMERIA ARABE',price:70402,desc:'Manzana, canela, lavanda, bergamota, flor de azahar. Fondo de vainilla, haba tonka y ámbar. Fragancia masculina intensa.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1749105224010.jpg',badge:'sale',stock:true,featured:false,variants:[]},
+  {id:44,name:'AFNAN 9AM DIVE 100ML',category:'PERFUMERIA ARABE',price:70602,desc:'Aromática acuática unisex. Notas de limón, melón, menta y madera. Fresco e intenso. 100ml.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1749105384668.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:45,name:'HYPNOS SALT SPEARMINT STRAWBERRY 35MG',category:'SALTS IMPORTADAS',price:18900,desc:'Menta suave con dulzura jugosa de fresas. Ideal para climas tropicales. 30ml / 35mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748852779821.jpg',badge:'',stock:true,featured:false,variants:[{label:'Nicotina',options:['35mg']}]},
+  {id:46,name:'HYPNOS SALT SPEARMINT WATERMELON 35MG',category:'SALTS IMPORTADAS',price:18900,desc:'Frescura de la menta con la dulzura jugosa e inconfundible de la sandía. 30ml / 35mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748852838724.jpg',badge:'',stock:true,featured:false,variants:[{label:'Nicotina',options:['35mg']}]},
+  {id:47,name:'HYPNOS SALT SPEARMINT CHERRY 35MG',category:'SALTS IMPORTADAS',price:18900,desc:'Cerezas maduras con frescor de la menta. Menta refrescante con sabor a cereza. 30ml / 35mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748852935998.jpg',badge:'',stock:true,featured:false,variants:[{label:'Nicotina',options:['35mg']}]},
+  {id:48,name:'HYPNOS SALT LEMON BERRY ICE 35MG',category:'SALTS IMPORTADAS',price:18900,desc:'Mezcla frutal de limón y bayas con helado de extrema frescura. 30ml / 35mg.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748852779821.jpg',badge:'new',stock:true,featured:false,variants:[{label:'Nicotina',options:['35mg']}]},
+  {id:49,name:"VICTORIA'S SECRET AMBER ROMANCE 236ML",category:'BODY LOTION',price:39502,desc:'Ámbar intenso. Besos dulces. Atardecer cálido. Tipo Gourmand. Crema corporal premium 236ml.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1761211363495.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:50,name:"VICTORIA'S SECRET AQUATIC ALLURE 236ML",category:'BODY LOTION',price:38502,desc:'Hidratación ligera con fragancia refrescante. Notas cítricas y marinas. Elegante y fresco. 236ml.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1761290466028.jpg',badge:'new',stock:true,featured:false,variants:[]},
+  {id:51,name:'ALGODON HELL VAPE 17GR',category:'ALGODONES',price:21900,desc:'Algodón premium para atomizadores rebuildables. 17gr. Mayor absorción y duración. Transferencia o efectivo.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748598587373.jpg',badge:'',stock:true,featured:false,variants:[]},
+  {id:52,name:'DRIP TIP 510/810',category:'DRIP',price:14002,desc:'Drip tip compatibles con boquilla 510 y 810. Varios colores y materiales disponibles. Mejora la experiencia de vapeo.',img:'https://pency-images.nyc3.digitaloceanspaces.com/thebigcloud/1748593664039.jpg',badge:'',stock:true,featured:false,variants:[]},
+];
+
+let products;
+const stored=localStorage.getItem('tbc_products');
+if(stored){
+  try{
+    products=JSON.parse(stored);
+    products=products.map((p,i)=>({featured:false,variants:[],...p,img:(!p.img||p.img.includes('via.placeholder'))?svgPlaceholder(p.name,neonColors[i%neonColors.length]):p.img}));
+  }catch(e){ products=defaultProducts; }
+} else {
+  products=defaultProducts;
+  localStorage.setItem('tbc_products',JSON.stringify(products));
+}
+
+const categories=['TODOS','PODS RECARGABLES','KIT AVANZADO','SALTS IMPORTADAS','E LÍQUID IMPORTADOS','E LIQUIDS NACIONALES','ATOMIZADORES','BATERIAS','RESISTENCIAS','ALGODONES','CARGADORES'];
+const catIcons={'TODOS':'🌐','PODS RECARGABLES':'💨','KIT AVANZADO':'⚡','SALTS IMPORTADAS':'🌊','E LÍQUID IMPORTADOS':'🌎','E LIQUIDS NACIONALES':'🇦🇷','ATOMIZADORES':'🔧','BATERIAS':'🔋','RESISTENCIAS':'🌀','ALGODONES':'☁️','CARGADORES':'🔌','KIT DE INICIO':'🚀','MOD\'S':'💻','HERRAMIENTAS':'🛠️','DRIP':'💧','PIREX':'🧪','BODY LOTION':'🧴','PERFUMERIA ARABE':'🌹'};
+
+let activeCategory='TODOS';
+let cart=JSON.parse(localStorage.getItem('tbc_cart')||'[]');
+
+// ============ MOBILE NAV ============
+function toggleMobileNav(){ document.getElementById('mobile-nav').classList.toggle('open'); document.getElementById('hamburger').classList.toggle('open'); }
+function closeMobileNav(){ document.getElementById('mobile-nav').classList.remove('open'); document.getElementById('hamburger').classList.remove('open'); }
+
+// ============ FEATURED ============
+function renderFeatured(){
+  const grid=document.getElementById('featured-grid');
+  const featured=products.filter(p=>p.badge==='hot'||p.featured===true);
+  if(!featured.length){ grid.innerHTML='<div class="featured-empty">Los productos destacados aparecerán aquí</div>'; return; }
+  grid.innerHTML=featured.slice(0,8).map(p=>`
+    <div class="featured-card" onclick="openProductModal(${p.id})">
+      <div class="featured-img-wrap">
+        <img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.src='${svgPlaceholder(p.name)}'">
+        <span class="featured-badge">🔥 DESTACADO</span>
+      </div>
+      <div class="featured-info">
+        <div class="featured-name">${p.name}</div>
+        <div class="featured-price">$${p.price.toLocaleString('es-AR')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============ CATEGORIES ============
+function renderCategories(){
+  const grid=document.getElementById('cat-grid');
+  const counts={};
+  products.forEach(p=>{ counts[p.category]=(counts[p.category]||0)+1; });
+  grid.innerHTML=categories.map(c=>{
+    const count=c==='TODOS'?products.length:(counts[c]||0);
+    if(count===0&&c!=='TODOS') return '';
+    return `<div class="cat-card ${c===activeCategory?'active':''}" onclick="selectCategory('${c}')">
+      <span class="cat-icon">${catIcons[c]||'📦'}</span>
+      <div class="cat-name">${c}</div>
+      <div class="cat-count">${count}</div>
+    </div>`;
+  }).join('');
+}
+function selectCategory(cat){ activeCategory=cat; renderCategories(); filterProducts(); document.getElementById('productos').scrollIntoView({behavior:'smooth'}); }
+
+// ============ PRODUCTS ============
+function filterProducts(){
+  const q=document.getElementById('search-input').value.toLowerCase();
+  let f=products;
+  if(activeCategory!=='TODOS') f=f.filter(p=>p.category===activeCategory);
+  if(q) f=f.filter(p=>p.name.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q)||p.category.toLowerCase().includes(q));
+  renderProducts(f);
+}
+function renderProducts(list){
+  const grid=document.getElementById('products-grid');
+  if(!list.length){ grid.innerHTML='<div class="no-products">😶‍🌫️ No se encontraron productos</div>'; return; }
+  grid.innerHTML=list.map(p=>`
+    <div class="product-card ${!p.stock?'out-of-stock':''}" id="card-${p.id}">
+      <div class="product-img-wrap" onclick="openProductModal(${p.id})" style="cursor:pointer;">
+        <img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.src='${svgPlaceholder(p.name)}'">
+        ${p.badge?`<span class="product-badge badge-${p.badge}">${p.badge==='hot'?'🔥 HOT':p.badge==='new'?'✨ NEW':'💜 OFERTA'}</span>`:''}
+        ${!p.stock?'<span class="product-badge" style="background:rgba(255,50,50,0.15);color:#ff5555;border-color:rgba(255,50,50,0.4);top:auto;bottom:0.75rem;">SIN STOCK</span>':''}
+      </div>
+      <div class="product-info">
+        <div class="product-cat">${p.category}</div>
+        <div class="product-name" onclick="openProductModal(${p.id})" style="cursor:pointer;">${p.name}</div>
+        <div class="product-desc">${p.desc}</div>
+        <div class="product-footer">
+          <span class="product-price">$${p.price.toLocaleString('es-AR')}</span>
+          <button class="add-cart-btn" id="addbtn-${p.id}" onclick="handleAddToCart(event,${p.id})" ${!p.stock?'disabled':''}>
+            ${p.stock?'+ AGREGAR':'SIN STOCK'}
+          </button>
+        </div>
+        ${p.variants&&p.variants.length?`<button class="view-detail-btn" onclick="openProductModal(${p.id})">Ver variantes →</button>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============ CART ANIMATION ============
+function animateAddToCart(btn, productImg){
+  const cartBtn=document.querySelector('.cart-btn');
+  const btnRect=cartBtn.getBoundingClientRect();
+  const srcRect=btn.getBoundingClientRect();
+  const particle=document.createElement('img');
+  particle.className='cart-particle';
+  particle.src=productImg;
+  const startX=srcRect.left+srcRect.width/2-25;
+  const startY=srcRect.top+window.scrollY+srcRect.height/2-25;
+  const endX=btnRect.left+btnRect.width/2-25;
+  const endY=btnRect.top+window.scrollY+btnRect.height/2-25;
+  particle.style.cssText=`left:${startX}px;top:${startY}px;`;
+  document.body.appendChild(particle);
+  const dur=550; const start=performance.now();
+  function step(now){
+    const t=Math.min((now-start)/dur,1);
+    const e=t<0.5?2*t*t:-1+(4-2*t)*t;
+    const arc=Math.sin(Math.PI*e)*-80;
+    const cx=startX+(endX-startX)*e;
+    const cy=startY+(endY-startY)*e+arc;
+    const scale=1-e*0.6;
+    const opacity=e<0.8?1:1-((e-0.8)/0.2);
+    particle.style.transform=`translate(${cx-startX}px,${cy-startY}px) scale(${scale})`;
+    particle.style.opacity=opacity;
+    if(t<1) requestAnimationFrame(step);
+    else { particle.remove(); cartBtn.classList.remove('bounce'); void cartBtn.offsetWidth; cartBtn.classList.add('bounce'); }
+  }
+  requestAnimationFrame(step);
+}
+function handleAddToCart(e,id){
+  e.stopPropagation();
+  const p=products.find(x=>x.id===id);
+  if(!p||!p.stock) return;
+  if(p.variants&&p.variants.length){ openProductModal(id); return; }
+  const btn=document.getElementById(`addbtn-${id}`);
+  const card=document.getElementById(`card-${id}`);
+  card.classList.add('adding');
+  card.addEventListener('animationend',()=>card.classList.remove('adding'),{once:true});
+  animateAddToCart(btn,p.img);
+  addToCart(id,null);
+}
+
+// ============ PRODUCT MODAL ============
+let currentModalProductId=null, selectedVariants={};
+function openProductModal(id){
+  const p=products.find(x=>x.id===id); if(!p) return;
+  currentModalProductId=id; selectedVariants={};
+  document.getElementById('pmodal-title').textContent=p.name;
+  document.getElementById('pmodal-img').src=p.img;
+  document.getElementById('pmodal-img').onerror=function(){this.src=svgPlaceholder(p.name);};
+  document.getElementById('pmodal-cat').textContent=p.category;
+  document.getElementById('pmodal-name').textContent=p.name;
+  document.getElementById('pmodal-desc').textContent=p.desc;
+  document.getElementById('pmodal-price').textContent='$'+p.price.toLocaleString('es-AR');
+  const vEl=document.getElementById('pmodal-variants');
+  vEl.innerHTML=(p.variants&&p.variants.length)?p.variants.map((v,vi)=>`
+    <div class="variant-group">
+      <span class="variant-label">${v.label}</span>
+      <div class="variant-options">${v.options.map(opt=>`<button class="variant-opt" data-group="${vi}" onclick="selectVariant(${vi},'${opt}',this)">${opt}</button>`).join('')}</div>
+    </div>`).join(''):'';
+  const addBtn=document.getElementById('pmodal-add-btn');
+  addBtn.disabled=!p.stock; addBtn.textContent=p.stock?'+ Agregar al Carrito':'Sin Stock';
+  document.getElementById('product-detail-modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function selectVariant(gi,val,btn){ selectedVariants[gi]=val; btn.closest('.variant-options').querySelectorAll('.variant-opt').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); }
+function addFromModal(){
+  if(!currentModalProductId) return;
+  const p=products.find(x=>x.id===currentModalProductId); if(!p||!p.stock) return;
+  let vLabel='';
+  if(p.variants&&p.variants.length){ const parts=p.variants.map((v,i)=>selectedVariants[i]?`${v.label}: ${selectedVariants[i]}`:null).filter(Boolean); vLabel=parts.join(' | '); }
+  addToCart(currentModalProductId,vLabel||null);
+  closeProductModal();
+  showToast(`✅ ${p.name} agregado al carrito`);
+}
+function closeProductModal(){ document.getElementById('product-detail-modal').classList.remove('open'); document.body.style.overflow=''; currentModalProductId=null; selectedVariants={}; }
+
+// ============ CART ============
+function addToCart(id,variantLabel){
+  const p=products.find(x=>x.id===id); if(!p||!p.stock) return;
+  const key=variantLabel?`${id}::${variantLabel}`:String(id);
+  const ex=cart.find(i=>i.cartKey===key);
+  if(ex) ex.qty++; else cart.push({...p,qty:1,cartKey:key,variantLabel:variantLabel||''});
+  saveCart(); updateCartUI();
+  if(!variantLabel) showToast(`✅ ${p.name} agregado al carrito`);
+}
+function removeFromCart(key){ cart=cart.filter(i=>i.cartKey!==key); saveCart(); updateCartUI(); }
+function changeQty(key,delta){ const item=cart.find(i=>i.cartKey===key); if(!item) return; item.qty+=delta; if(item.qty<=0) removeFromCart(key); else { saveCart(); updateCartUI(); } }
+function saveCart(){ localStorage.setItem('tbc_cart',JSON.stringify(cart)); }
+function toggleCart(){ document.getElementById('cart-overlay').classList.toggle('open'); document.getElementById('cart-sidebar').classList.toggle('open'); }
+function updateCartUI(){
+  const total=cart.reduce((a,i)=>a+i.price*i.qty,0);
+  const count=cart.reduce((a,i)=>a+i.qty,0);
+  const cEl=document.getElementById('cart-count'); cEl.textContent=count; cEl.style.display=count>0?'flex':'none';
+  document.getElementById('cart-total').textContent='$'+total.toLocaleString('es-AR');
+  const iEl=document.getElementById('cart-items');
+  if(!cart.length){ iEl.innerHTML='<div class="cart-empty"><span class="cart-empty-icon">💨</span><p>Tu carrito está vacío</p></div>'; return; }
+  iEl.innerHTML=cart.map(i=>`
+    <div class="cart-item">
+      <img class="cart-item-img" src="${i.img}" alt="${i.name}" onerror="this.src='${svgPlaceholder(i.name)}'">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${i.name}</div>
+        ${i.variantLabel?`<div class="cart-item-variant">${i.variantLabel}</div>`:''}
+        <div class="cart-item-price">$${i.price.toLocaleString('es-AR')}</div>
+        <div class="cart-item-qty">
+          <button class="qty-btn" onclick="changeQty('${i.cartKey}',-1)">−</button>
+          <span class="qty-num">${i.qty}</span>
+          <button class="qty-btn" onclick="changeQty('${i.cartKey}',1)">+</button>
+        </div>
+      </div>
+      <button class="remove-item" onclick="removeFromCart('${i.cartKey}')">🗑</button>
+    </div>
+  `).join('');
+}
+
+// ============ CHECKOUT ============
+function openCheckout(){
+  if(!cart.length){ showToast('⚠ Tu carrito está vacío','pink'); return; }
+  toggleCart();
+  const total=cart.reduce((a,i)=>a+i.price*i.qty,0);
+  document.getElementById('checkout-summary').innerHTML=`
+    <div class="order-summary-title">Tu Pedido</div>
+    ${cart.map(i=>`<div class="order-summary-item"><span>${i.name}${i.variantLabel?' ('+i.variantLabel+')':''} x${i.qty}</span><span>$${(i.price*i.qty).toLocaleString('es-AR')}</span></div>`).join('')}
+    <div class="order-summary-total"><span>TOTAL</span><span>$${total.toLocaleString('es-AR')}</span></div>
+  `;
+  applyConfig();
+  document.getElementById('checkout-modal').classList.add('open');
+}
+function closeCheckout(){ document.getElementById('checkout-modal').classList.remove('open'); }
+function sendWhatsApp(){
+  const name=document.getElementById('checkout-name').value.trim();
+  const phone=document.getElementById('checkout-phone').value.trim();
+  const address=document.getElementById('checkout-address').value.trim();
+  if(!name){ showToast('⚠ Ingresá tu nombre','pink'); return; }
+  const cfg=getConfig();
+  const total=cart.reduce((a,i)=>a+i.price*i.qty,0);
+  let msg=`🛒 *NUEVO PEDIDO - The Big Cloud*\n\n👤 *Cliente:* ${name}\n`;
+  if(phone) msg+=`📱 *Teléfono:* ${phone}\n`;
+  if(address) msg+=`📍 *Dirección:* ${address}\n`;
+  msg+=`\n📦 *Productos:*\n`;
+  cart.forEach(i=>{ msg+=`• ${i.name}${i.variantLabel?' ('+i.variantLabel+')':''} x${i.qty} — $${(i.price*i.qty).toLocaleString('es-AR')}\n`; });
+  msg+=`\n💰 *TOTAL: $${total.toLocaleString('es-AR')}*\n\n💳 Realizaré la transferencia al alias *${cfg.alias}* y adjunto el comprobante.`;
+  window.open(`https://wa.me/${cfg.waNumber}?text=${encodeURIComponent(msg)}`,'_blank');
+  cart=[]; saveCart(); updateCartUI(); closeCheckout();
+  showToast('✅ Redirigiendo a WhatsApp...','green');
+}
+
+// ============ TOAST ============
+function showToast(msg,type='green'){
+  const t=document.getElementById('toast');
+  const colors={green:'var(--neon-green)',pink:'var(--neon-pink)',cyan:'var(--neon-cyan)'};
+  t.style.borderColor=colors[type]||colors.green; t.style.color=colors[type]||colors.green;
+  t.style.boxShadow=`0 0 20px ${colors[type]||colors.green}44`;
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ============ INIT ============
+applyConfig();
+renderFeatured();
+renderCategories();
+filterProducts();
+updateCartUI();
+document.getElementById('product-detail-modal').addEventListener('click',function(e){if(e.target===this)closeProductModal();});
+document.getElementById('checkout-modal').addEventListener('click',function(e){if(e.target===this)closeCheckout();});
+</script>
+</body>
+</html>
